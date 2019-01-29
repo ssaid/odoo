@@ -156,7 +156,7 @@ class WebsiteSale(http.Controller):
         quantity = product._context.get('quantity') or 1
         product = product.with_context(quantity=quantity)
 
-        visible_attrs_ids = product.attribute_line_ids.filtered(lambda l: len(l.value_ids) > 1).mapped('attribute_id').ids
+        visible_attrs_ids = product.attribute_line_ids.filtered(lambda l: len(l.value_ids) > 0).mapped('attribute_id').ids
         to_currency = request.website.get_current_pricelist().currency_id
         attribute_value_ids = []
         for variant in product.product_variant_ids:
@@ -527,10 +527,10 @@ class WebsiteSale(http.Controller):
                 'country_id': (int(data['country_id'])
                                if data.get('country_id') else False),
             })
-            try:
-                partner_dummy.check_vat()
-            except ValidationError:
-                error["vat"] = 'error'
+            #try:
+            #    partner_dummy.check_vat()
+            #except ValidationError:
+            #    error["vat"] = 'error'
 
         if [err for err in error.items() if err == 'missing']:
             error_message.append(_('Some required fields are empty.'))

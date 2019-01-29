@@ -67,11 +67,11 @@ $('.oe_website_sale').each(function() {
                     // For options products: if qty not available disable add to cart on change variant
                     $parent.find('.js_add').toggleClass('disabled btn', info['virtual_available'] < 1);
                 }
-                xml_load.then(function() {
-                    $(oe_website_sale).find('.availability_message_' + info['product_template']).remove();
-                    var $message = $(QWeb.render('website_sale_stock.product_availability', info));
-                    $('div.availability_messages').html($message);
-                });
+                // xml_load.then(function() {
+                //     $(oe_website_sale).find('.availability_message_' + info['product_template']).remove();
+                //     var $message = $(QWeb.render('website_sale_stock.product_availability', info));
+                //     $('div.availability_messages').html($message);
+                // });
             }
         }
     });

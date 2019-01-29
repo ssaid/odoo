@@ -324,6 +324,20 @@ odoo.define('website_sale.website_sale', function (require) {
         });
 
         $(oe_website_sale).on('change', 'input.js_variant_change, select.js_variant_change, ul[data-attribute_value_ids]', function (ev) {
+            var variant_id = false;
+            if ($(ev.target).length && $(ev.target).attr('name') && $(ev.target).attr('name').split('-').length === 3) {
+                variant_id = $(ev.target).attr('name').split('-')[2];
+            }
+            if (variant_id === '1') {
+              $("strong[data-oe-model='product.attribute'][data-oe-id='2']").siblings('ul').find('input.js_variant_change').prop('checked', false);
+            }
+            var size_attr = $("strong[data-oe-model='product.attribute'][data-oe-id='2']").siblings('ul').find('input.js_variant_change');
+            if (! size_attr.length || ! size_attr.find(':checked').length) {
+              $("#add_to_cart").addClass('disabled');
+            }
+            else {
+              $("#add_to_cart").removeClass('disabled');
+            }
             var $ul = $(ev.target).closest('.js_add_cart_variants');
             var $parent = $ul.closest('.js_product');
             var $product_id = $parent.find('.product_id').first();
@@ -375,23 +389,35 @@ odoo.define('website_sale.website_sale', function (require) {
                 });
 
                 for (var k in variant_ids) {
-                    if (!_.difference(values, variant_ids[k][1]).length) {
+                    if ((!_.difference(values, variant_ids[k][1]).length) && variant_ids[k][4].virtual_available) {
+                        $input.parent().parent().show();
                         return;
                     }
                 }
+
+                var variant_id = false;
+                if ($input.length && $input.attr('name') && $input.attr('name').split('-').length === 3) {
+                    variant_id = $input.attr('name').split('-')[2];
+                }
+                if (variant_id === '1') {
+                  return;
+                }
+
                 $input.closest("label").addClass("css_not_available");
                 $input.find("option[value='" + id + "']").addClass("css_not_available");
+                $input.parent().parent().hide();
             });
 
             if (product_id) {
                 $parent.removeClass("css_not_available");
                 $product_id.val(product_id);
                 $parent.find("#add_to_cart").removeClass("disabled");
-            } else {
-                $parent.addClass("css_not_available");
-                $product_id.val(0);
-                $parent.find("#add_to_cart").addClass("disabled");
             }
+            // } else {
+                // $parent.addClass("css_not_available");
+                // $product_id.val(0);
+                // $parent.find("#add_to_cart").addClass("disabled");
+            // }
         });
 
         $('div.js_product', oe_website_sale).each(function () {
@@ -440,6 +466,7 @@ odoo.define('website_sale.website_sale', function (require) {
             });
         }
 
+	    /*
         if ($(".checkout_autoformat").length) {
             $(oe_website_sale).on('change', "select[name='country_id']", function () {
                 clickwatch(function() {
@@ -492,6 +519,7 @@ odoo.define('website_sale.website_sale', function (require) {
             });
         }
         $("select[name='country_id']").change();
+	*/
     });
 
     // Deactivate image zoom for mobile devices, since it might prevent users to scroll

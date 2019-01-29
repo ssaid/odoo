@@ -337,6 +337,7 @@ class GeventServer(CommonServer):
         super(GeventServer, self).__init__(app)
         self.port = config['longpolling_port']
         self.httpd = None
+        _logger.info('GeventServer using %s' % self.port)
 
     def process_limits(self):
         restart = False
