@@ -67,6 +67,7 @@ class AccountInvoiceReport(models.Model):
     user_currency_residual = fields.Float(string="Total Residual", compute='_compute_amounts_in_user_currency', digits=0)
     country_id = fields.Many2one('res.country', string='Country of the Partner Company')
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', groups="analytic.group_analytic_accounting")
+    pos_config_id = fields.Many2one('pos.config', string='PoS')
 
     _order = 'date desc'
 
@@ -95,7 +96,7 @@ class AccountInvoiceReport(models.Model):
                 sub.fiscal_position_id, sub.user_id, sub.company_id, sub.nbr, sub.type, sub.state,
                 sub.categ_id, sub.date_due, sub.account_id, sub.account_line_id, sub.partner_bank_id,
                 sub.product_qty, sub.price_total as price_total, sub.price_average as price_average,
-                COALESCE(cr.rate, 1) as currency_rate, sub.residual as residual, sub.commercial_partner_id as commercial_partner_id
+                COALESCE(cr.rate, 1) as currency_rate, sub.residual as residual, sub.commercial_partner_id as commercial_partner_id, sub.pos_config_id as pos_config_id
         """
         return select_str
 
@@ -119,7 +120,8 @@ class AccountInvoiceReport(models.Model):
                     ai.residual_company_signed / (SELECT count(*) FROM account_invoice_line l where invoice_id = ai.id) *
                     count(*) * invoice_type.sign AS residual,
                     ai.commercial_partner_id as commercial_partner_id,
-                    partner.country_id
+                    coalesce(partner.country_id, partner_ai.country_id) AS country_id,
+                    poss.config_id AS pos_config_id
         """
         return select_str
 
@@ -128,10 +130,13 @@ class AccountInvoiceReport(models.Model):
                 FROM account_invoice_line ail
                 JOIN account_invoice ai ON ai.id = ail.invoice_id
                 JOIN res_partner partner ON ai.commercial_partner_id = partner.id
+                JOIN res_partner partner_ai ON ai.partner_id = partner_ai.id
                 LEFT JOIN product_product pr ON pr.id = ail.product_id
                 left JOIN product_template pt ON pt.id = pr.product_tmpl_id
                 LEFT JOIN product_uom u ON u.id = ail.uom_id
                 LEFT JOIN product_uom u2 ON u2.id = pt.uom_id
+                left join pos_order poso ON poso.invoice_id = ai.id
+                left join pos_session poss ON poss.id=poso.session_id
                 JOIN (
                     -- Temporary table to decide if the qty should be added or retrieved (Invoice vs Credit Note)
                     SELECT id,(CASE
@@ -154,7 +159,7 @@ class AccountInvoiceReport(models.Model):
                     ai.partner_id, ai.payment_term_id, u2.name, u2.id, ai.currency_id, ai.journal_id,
                     ai.fiscal_position_id, ai.user_id, ai.company_id, ai.type, invoice_type.sign, ai.state, pt.categ_id,
                     ai.date_due, ai.account_id, ail.account_id, ai.partner_bank_id, ai.residual_company_signed,
-                    ai.amount_total_company_signed, ai.commercial_partner_id, partner.country_id
+                    ai.amount_total_company_signed, ai.commercial_partner_id, coalesce(partner.country_id, partner_ai.country_id), poss.config_id
         """
         return group_by_str
 
