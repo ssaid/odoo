@@ -67,7 +67,6 @@
         <field name="arch" type="xml">
             <search string="Invoices Analysis">
                 <filter string="My Invoices" name="my_invoice" domain="[('user_id', '=', uid)]"/>
-                <filter string="Locales" name="pos" domain="[('pos_config_id', '!=', False)]"/>
                 <separator/>
                 <field name="date"/>
                 <filter string="This Year" name="thisyear" domain="['|', ('date', '=', False), '&amp;',('date','&lt;=', time.strftime('%%Y-12-31')),('date','&gt;=',time.strftime('%%Y-01-01'))]" help="Journal invoices with period in current year"/>
@@ -89,7 +88,6 @@
                 <field name="account_analytic_id"/>
                 <group expand="1" string="Group By">
                     <filter string="Partner" name="partner_id" context="{'group_by':'partner_id','residual_visible':True}"/>
-                    <filter string="PoS" name="pos_config_id" context="{'group_by':'pos_config_id'}"/>
                     <filter string="Salesperson" name='user' context="{'group_by':'user_id'}"/>
                     <filter string="Product Category" name="category_product" context="{'group_by':'categ_id','residual_invisible':True}"/>
                     <filter string="Status" context="{'group_by':'state'}"/>
