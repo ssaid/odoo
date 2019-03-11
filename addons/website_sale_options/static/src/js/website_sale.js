@@ -47,6 +47,7 @@ $('.oe_website_sale #add_to_cart, .oe_website_sale #products_grid .a-submit')
                             var $q = $(".my_cart_quantity");
                             $q.parent().parent().removeClass("hidden", !quantity);
                             $q.html(quantity).hide().fadeIn(600);
+                            window.location.reload();
                         }
                     });
                     $modal.modal('hide');
