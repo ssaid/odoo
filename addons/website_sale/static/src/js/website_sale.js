@@ -501,9 +501,9 @@ odoo.define('website_sale.website_sale', function (require) {
             let attribute_value_ids = $parent.find(".js_add_cart_variants").attr("data-attribute_value_ids");
             if(_.isString(attribute_value_ids)) {
                 attribute_value_ids = JSON.parse(attribute_value_ids.replace(/'/g, '"'));
-                if(_.filter(attribute_value_ids, function(avi){
-                    return avi[1][0] === parseInt(id);
-                })) {
+                if(!_.filter(attribute_value_ids, function(avi){
+                    return avi[1].includes(parseInt(id));
+                }).length) {
                     $input.parent().parent().hide();
                 }
             }
