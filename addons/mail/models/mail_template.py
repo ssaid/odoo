@@ -566,6 +566,6 @@ class MailTemplate(models.Model):
             values['attachment_ids'] = [(6, 0, attachment_ids)]
             mail.write({'attachment_ids': [(6, 0, attachment_ids)]})
 
-        if force_send:
-            mail.send(raise_exception=raise_exception)
+        # if force_send:
+        #     mail.send(raise_exception=raise_exception)
         return mail.id  # TDE CLEANME: return mail + api.returns ?
