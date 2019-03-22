@@ -2098,14 +2098,15 @@ class MailThread(models.AbstractModel):
             self = self.with_context(ctx)
 
         for record in self:
-            record.message_post_with_view(
-                'mail.message_user_assigned',
-                composition_mode='mass_mail',
-                partner_ids=[(4, pid) for pid in partner_ids],
-                auto_delete=True,
-                auto_delete_message=True,
-                parent_id=False, # override accidental context defaults
-                subtype_id=self.env.ref('mail.mt_note').id)
+            _logger.warning('Ignoring Mail Message User Assigned')
+            # record.message_post_with_view(
+            #     'mail.message_user_assigned',
+            #     composition_mode='mass_mail',
+            #     partner_ids=[(4, pid) for pid in partner_ids],
+            #     auto_delete=True,
+            #     auto_delete_message=True,
+            #     parent_id=False, # override accidental context defaults
+            #     subtype_id=self.env.ref('mail.mt_note').id)
 
     @api.multi
     def message_auto_subscribe(self, updated_fields, values=None):
