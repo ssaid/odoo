@@ -42,7 +42,8 @@ $('.oe_website_sale #add_to_cart, .oe_website_sale #products_grid .a-submit')
                         data: {lang: weContext.get().lang},
                         success: function (quantity) {
                             if (!$a.hasClass('js_goto_shop')) {
-                                window.location.pathname = window.location.pathname.replace(/shop([\/?].*)?$/, "shop/cart");
+                                window.location.replace('/shop/cart');
+                                return;
                             }
                             var $q = $(".my_cart_quantity");
                             $q.parent().parent().removeClass("hidden", !quantity);
