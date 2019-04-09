@@ -585,6 +585,7 @@ odoo.define('website_sale.website_sale', function (require) {
 
                 // populate states and display
                 var selectStates = $("select[name='state_id']");
+                var backendSelectedState = selectStates.val();
                 // dont reload state at first loading (done in qweb)
                 if (selectStates.data('init')===0 || selectStates.find('option').length===1) {
                   if (data.states.length) {
@@ -598,6 +599,7 @@ odoo.define('website_sale.website_sale', function (require) {
                       selectStates.append(opt);
                     });
                     selectStates.parent('div').show();
+                    selectStates.val(backendSelectedState);
                   }
                   else {
                     selectStates.val('').parent('div').hide();
