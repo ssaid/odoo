@@ -56,7 +56,7 @@ class pos_config(osv.osv):
     _columns = {
         'name' : fields.char('Point of Sale Name', select=1,
              required=True, help="An internal identification of the point of sale"),
-        'journal_ids' : fields.many2many('account.journal', 'pos_config_journal_rel', 
+        'journal_ids' : fields.many2many('account.journal', 'pos_config_journal_rel',
              'pos_config_id', 'journal_id', 'Available Payment Methods',
              domain="[('journal_user', '=', True ), ('type', 'in', ['bank', 'cash'])]",),
         'picking_type_id': fields.many2one('stock.picking.type', 'Picking Type'),
@@ -175,12 +175,12 @@ class pos_config(osv.osv):
         'iface_invoicing': True,
         'stock_location_id': _get_default_location,
         'company_id': _get_default_company,
-        'barcode_product': '*', 
-        'barcode_cashier': '041*', 
-        'barcode_customer':'042*', 
-        'barcode_weight':  '21xxxxxNNDDD', 
-        'barcode_discount':'22xxxxxxxxNN', 
-        'barcode_price':   '23xxxxxNNNDD', 
+        'barcode_product': '*',
+        'barcode_cashier': '041*',
+        'barcode_customer':'042*',
+        'barcode_weight':  '21xxxxxNNDDD',
+        'barcode_discount':'22xxxxxxxxNN',
+        'barcode_price':   '23xxxxxNNNDD',
     }
 
     def onchange_picking_type_id(self, cr, uid, ids, picking_type_id, context=None):
@@ -272,13 +272,13 @@ class pos_session(osv.osv):
                                     states={'opening_control' : [('readonly', False)]}
                                    ),
         'currency_id' : fields.related('config_id', 'currency_id', type="many2one", relation='res.currency', string="Currnecy"),
-        'start_at' : fields.datetime('Opening Date', readonly=True), 
+        'start_at' : fields.datetime('Opening Date', readonly=True),
         'stop_at' : fields.datetime('Closing Date', readonly=True),
 
         'state' : fields.selection(POS_SESSION_STATE, 'Status',
                 required=True, readonly=True,
                 select=1, copy=False),
-        
+
         'sequence_number': fields.integer('Order Sequence Number', help='A sequence number that is incremented with each order'),
         'login_number':  fields.integer('Login Sequence Number', help='A sequence number that is incremented each time a user resumes the pos session'),
 
@@ -294,10 +294,10 @@ class pos_session(osv.osv):
                                              type='many2one', relation='account.bank.statement',
                                              string='Cash Register', store=True),
 
-        'opening_details_ids' : fields.related('cash_register_id', 'opening_details_ids', 
+        'opening_details_ids' : fields.related('cash_register_id', 'opening_details_ids',
                 type='one2many', relation='account.cashbox.line',
                 string='Opening Cash Control'),
-        'details_ids' : fields.related('cash_register_id', 'details_ids', 
+        'details_ids' : fields.related('cash_register_id', 'details_ids',
                 type='one2many', relation='account.cashbox.line',
                 string='Cash Control'),
 
@@ -498,7 +498,7 @@ class pos_session(osv.osv):
                         raise osv.except_osv( _('Error!'),
                             _("Your ending balance is too different from the theoretical cash closing (%.2f), the maximum allowed is: %.2f. You can contact your manager to force it.") % (st.difference, st.journal_id.amount_authorized_diff))
                 if (st.journal_id.type not in ['bank', 'cash']):
-                    raise osv.except_osv(_('Error!'), 
+                    raise osv.except_osv(_('Error!'),
                         _("The type of the journal for your payment method should be bank or cash "))
                 getattr(st, 'button_confirm_%s' % st.journal_id.type)(context=context)
         self._confirm_orders(cr, uid, ids, context=context)
@@ -612,7 +612,7 @@ class pos_order(osv.osv):
 
     def _process_order(self, cr, uid, order, context=None):
         session = self.pool.get('pos.session').browse(cr, uid, order['pos_session_id'], context=context)
-
+        _logger.info('%s uid #%s', session, uid)
         if session.state == 'closing_control' or session.state == 'closed':
             session_id = self._get_valid_session(cr, uid, order, context=context)
             session = self.pool.get('pos.session').browse(cr, uid, session_id, context=context)
@@ -663,7 +663,7 @@ class pos_order(osv.osv):
         orders_to_save = [o for o in orders if o['data']['name'] not in existing_references]
 
         order_ids = []
-
+        _logger.info('create_from_ui debug info below\nsubmitted references: %s\nexisting_orders: %s\norders_to_save: %s\norders: %s' % (submitted_references, existing_orders, orders_to_save, orders))
         for tmp_order in orders_to_save:
             to_invoice = tmp_order['to_invoice']
             order = tmp_order['data']
@@ -752,7 +752,7 @@ class pos_order(osv.osv):
         'partner_id': fields.many2one('res.partner', 'Customer', change_default=True, select=1, states={'draft': [('readonly', False)], 'paid': [('readonly', False)]}),
         'sequence_number': fields.integer('Sequence Number', help='A session-unique sequence number for the order'),
 
-        'session_id' : fields.many2one('pos.session', 'Session', 
+        'session_id' : fields.many2one('pos.session', 'Session',
                                         #required=True,
                                         select=1,
                                         domain="[('state', '=', 'opened')]",
@@ -783,7 +783,7 @@ class pos_order(osv.osv):
         return session_ids and session_ids[0] or False
 
     def _default_pricelist(self, cr, uid, context=None):
-        session_ids = self._default_session(cr, uid, context) 
+        session_ids = self._default_session(cr, uid, context)
         if session_ids:
             session_record = self.pool.get('pos.session').browse(cr, uid, session_ids, context=context)
             return session_record.config_id.pricelist_id and session_record.config_id.pricelist_id.id or False
@@ -796,7 +796,7 @@ class pos_order(osv.osv):
     _defaults = {
         'user_id': lambda self, cr, uid, context: uid,
         'state': 'draft',
-        'name': '/', 
+        'name': '/',
         'date_order': lambda *a: time.strftime('%Y-%m-%d %H:%M:%S'),
         'nb_print': 0,
         'sequence_number': 1,
@@ -871,7 +871,7 @@ class pos_order(osv.osv):
                     'product_uom': line.product_id.uom_id.id,
                     'product_uos': line.product_id.uom_id.id,
                     'picking_id': picking_id,
-                    'picking_type_id': picking_type.id, 
+                    'picking_type_id': picking_type.id,
                     'product_id': line.product_id.id,
                     'product_uos_qty': abs(line.qty),
                     'product_uom_qty': abs(line.qty),
@@ -879,7 +879,7 @@ class pos_order(osv.osv):
                     'location_id': location_id if line.qty >= 0 else destination_id,
                     'location_dest_id': destination_id if line.qty >= 0 else location_id,
                 }, context=context))
-                
+
             if picking_id:
                 picking_obj.action_confirm(cr, uid, [picking_id], context=context)
                 picking_obj.force_assign(cr, uid, [picking_id], context=context)
@@ -966,7 +966,7 @@ class pos_order(osv.osv):
         """Create a copy of order  for refund order"""
         clone_list = []
         line_obj = self.pool.get('pos.order.line')
-        
+
         for order in self.browse(cr, uid, ids, context=context):
             current_session_ids = self.pool.get('pos.session').search(cr, uid, [
                 ('state', '!=', 'closed'),
@@ -1195,8 +1195,8 @@ class pos_order(osv.osv):
                 else:
                     grouped_data[key].append(values)
 
-            #because of the weird way the pos order is written, we need to make sure there is at least one line, 
-            #because just after the 'for' loop there are references to 'line' and 'income_account' variables (that 
+            #because of the weird way the pos order is written, we need to make sure there is at least one line,
+            #because just after the 'for' loop there are references to 'line' and 'income_account' variables (that
             #are set inside the for loop)
             #TOFIX: a deep refactoring of this method (and class!) is needed in order to get rid of this stupid hack
             assert order.lines, _('The POS order must have lines when calling this method')
@@ -1462,7 +1462,7 @@ class pos_category(osv.osv):
         for obj in self.browse(cr, uid, ids, context=context):
             result[obj.id] = tools.image_get_resized_images(obj.image)
         return result
-    
+
     def _set_image(self, cr, uid, id, name, value, args, context=None):
         return self.write(cr, uid, [id], {'image': tools.image_resize_image_big(value)}, context=context)
 
@@ -1472,7 +1472,7 @@ class pos_category(osv.osv):
         'parent_id': fields.many2one('pos.category','Parent Category', select=True),
         'child_id': fields.one2many('pos.category', 'parent_id', string='Children Categories'),
         'sequence': fields.integer('Sequence', help="Gives the sequence order when displaying a list of product categories."),
-        
+
         # NOTE: there is no 'default image', because by default we don't show thumbnails for categories. However if we have a thumbnail
         # for at least one category, then we display a default image on the other, so that the buttons have consistent styling.
         # In this case, the default image is set by the js code.
@@ -1503,7 +1503,7 @@ class product_template(osv.osv):
     _columns = {
         'income_pdt': fields.boolean('Point of Sale Cash In', help="Check if, this is a product you can use to put cash into a statement for the point of sale backend."),
         'expense_pdt': fields.boolean('Point of Sale Cash Out', help="Check if, this is a product you can use to take cash from a statement for the point of sale backend, example: money lost, transfer to bank, etc."),
-        'available_in_pos': fields.boolean('Available in the Point of Sale', help='Check if you want this product to appear in the Point of Sale'), 
+        'available_in_pos': fields.boolean('Available in the Point of Sale', help='Check if you want this product to appear in the Point of Sale'),
         'to_weight' : fields.boolean('To Weigh With Scale', help="Check if the product should be weighted using the hardware scale integration"),
         'pos_categ_id': fields.many2one('pos.category','Point of Sale Category', help="Those categories are used to group similar products for point of sale."),
     }
@@ -1539,7 +1539,7 @@ class res_partner(osv.osv):
             self.write(cr, uid, [partner_id], partner, context=context)
         else:
             partner_id = self.create(cr, uid, partner, context=context)
-        
+
         return partner_id
 
 

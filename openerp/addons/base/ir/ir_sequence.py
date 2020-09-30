@@ -56,7 +56,7 @@ class ir_sequence(openerp.osv.osv.osv):
     """
     _name = 'ir.sequence'
     _order = 'name'
-    
+
     def _get_number_next_actual(self, cr, user, ids, field_name, arg, context=None):
         '''Return number from ir_sequence row when no_gap implementation,
         and number from postgres sequence when standard implementation.'''
@@ -68,11 +68,13 @@ class ir_sequence(openerp.osv.osv.osv):
                 # get number from postgres sequence. Cannot use
                 # currval, because that might give an error when
                 # not having used nextval before.
-                statement = (
-                    "SELECT last_value, increment_by, is_called"
-                    " FROM ir_sequence_%03d"
-                    % element.id)
-                cr.execute(statement)
+                query = """SELECT last_value,
+                (SELECT increment_by
+                FROM pg_sequences
+                WHERE sequencename = 'ir_sequence_%(seq_id)03d'),
+                is_called
+                FROM ir_sequence_%(seq_id)03d"""
+                cr.execute(query % {'seq_id': element.id})
                 (last_value, increment_by, is_called) = cr.fetchone()
                 if is_called:
                     res[element.id] = last_value + increment_by
@@ -114,7 +116,7 @@ class ir_sequence(openerp.osv.osv.osv):
 
     def init(self, cr):
         return # Don't do the following index yet.
-        # CONSTRAINT/UNIQUE INDEX on (code, company_id) 
+        # CONSTRAINT/UNIQUE INDEX on (code, company_id)
         # /!\ The unique constraint 'unique_name_company_id' is not sufficient, because SQL92
         # only support field names in constraint definitions, and we need a function here:
         # we need to special-case company_id to treat all NULL company_id as equal, otherwise
@@ -276,7 +278,7 @@ class ir_sequence(openerp.osv.osv.osv):
                 ``force_company`` key with the ID of the company to
                 use instead of the user's current company for the
                 sequence selection. A matching sequence for that
-                specific company will get higher priority. 
+                specific company will get higher priority.
         """
         self.check_access_rights(cr, uid, 'read')
         company_ids = self.pool.get('res.company').search(cr, uid, [], context=context) + [False]

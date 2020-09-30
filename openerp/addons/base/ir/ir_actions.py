@@ -1212,12 +1212,12 @@ class ir_actions_act_client(osv.osv):
                            help="An arbitrary string, interpreted by the client"
                                 " according to its own needs and wishes. There "
                                 "is no central tag repository across clients."),
-        'res_model': fields.char('Destination Model', 
+        'res_model': fields.char('Destination Model',
             help="Optional model, mostly used for needactions."),
         'context': fields.char('Context Value', required=True,
             help="Context dictionary as Python expression, empty by default (Default: {})"),
         'params': fields.function(_get_params, fnct_inv=_set_params,
-                                  type='binary', 
+                                  type='binary',
                                   string="Supplementary arguments",
                                   help="Arguments sent to the client along with"
                                        "the view tag"),
