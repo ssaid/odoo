@@ -67,9 +67,11 @@ class mail_compose_message(osv.TransientModel):
             mailing mode. But in 'single post' mode, attachments of an email template
             also have to be duplicated to avoid changing their ownership. """
         email_context = dict(context or {})
+        active_ids = context.get('active_ids', [])
         for wizard in self.browse(cr, uid, ids, context=context):
-            if not wizard.attachment_ids or wizard.composition_mode == 'mass_mail' or not wizard.template_id:
-                continue
+            res_ids = [wizard.res_id]
+#            if not wizard.attachment_ids or wizard.composition_mode == 'mass_mail' or not wizard.template_id:
+#                continue
             template = self.pool.get('email.template').browse(cr, uid, wizard.template_id, context=context)
             # TODO v8, remove me
             # template specific outgoing mail server and email from is lost in super send_mail
@@ -83,7 +85,20 @@ class mail_compose_message(osv.TransientModel):
                 else:
                     new_attachment_ids.append(attachment.id)
                 self.write(cr, uid, wizard.id, {'attachment_ids': [(6, 0, new_attachment_ids)]}, context=context)
-        return super(mail_compose_message, self).send_mail(cr, uid, ids, context=email_context)
+
+        msg_id = self.pool.get('email.template').send_mail(cr, uid, wizard.template_id, res_ids[0], force_send=False)
+
+        # Sobreescribimos valores del wizard al mail.mail
+        post_values = {
+            'subject': wizard.subject,
+            'body_html': wizard.body or '',
+            'email_to': ';'.join(map(lambda x: x.email, wizard.partner_ids)),
+            'attachment_ids': [(6, 0, [attach.id for attach in wizard.attachment_ids])],
+        }
+
+        self.pool.get('mail.mail').write(cr, uid, msg_id, post_values, context)
+        return msg_id
+        #return super(mail_compose_message, self).send_mail(cr, uid, ids, context=email_context)
 
     def onchange_template_id(self, cr, uid, ids, template_id, composition_mode, model, res_id, context=None):
         """ - mass_mailing: we cannot render, so return the template values

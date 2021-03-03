@@ -2862,6 +2862,7 @@ class BaseModel(object):
             for id in cr.fetchall():
                 pos2 = browse_rec(id[0], pos2)
             cr.execute('update '+self._table+' set parent_left=%s, parent_right=%s where id=%s', (pos, pos2, root))
+            print cr.mogrify('update '+self._table+' set parent_left=%s, parent_right=%s where id=%s', (pos, pos2, root))
             return pos2 + 1
         query = 'SELECT id FROM '+self._table+' WHERE '+self._parent_name+' IS NULL'
         if self._parent_order:

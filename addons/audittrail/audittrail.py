@@ -295,6 +295,8 @@ class audittrail_objects_proxy(object_proxy):
                 res_ids = args[0]
                 if isinstance(res_ids, (long, int)):
                     res_ids = [res_ids]
+                elif not isinstance(res_ids, list):
+                    return fct_src(cr, uid_orig, model.model, method, *args, **kw)
             if res_ids:
                 # store the old values into a dictionary
                 old_values = self.get_data(cr, uid_orig, pool, res_ids, model, method)
@@ -332,6 +334,9 @@ class audittrail_objects_proxy(object_proxy):
             context = {}
         data = {}
         resource_pool = pool.get(model.model)
+        if isinstance(res_ids, dict):
+            return data
+
         # read all the fields of the given resources in super admin mode
         for resource in resource_pool.read(cr, SUPERUSER_ID, res_ids, resource_pool._all_columns):
             values = {}

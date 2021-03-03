@@ -45,6 +45,9 @@ from psycopg2.psycopg1 import cursor as psycopg1cursor
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 _logger = logging.getLogger(__name__)
+_logger2 = logging.getLogger('connector')
+_logger2.error('initdb')
+print('aaaaaaaaa')
 
 types_mapping = {
     'date': (1082,),
@@ -424,7 +427,6 @@ class ConnectionPool(object):
                 self._debug('Existing connection found at index %d', i)
 
                 return cnx
-
         if len(self._connections) >= self._maxconn:
             # try to remove the oldest connection not used
             for i, (cnx, used) in enumerate(self._connections):
@@ -436,6 +438,7 @@ class ConnectionPool(object):
                     break
             else:
                 # note: this code is called only if the for loop has completed (no break)
+                print('%s - %s' % (len(self._connections), self._maxconn))
                 raise PoolError('The Connection Pool Is Full')
 
         try:

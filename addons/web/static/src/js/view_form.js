@@ -198,6 +198,7 @@ instance.web.FormView = instance.web.View.extend(instance.web.form.FieldManagerM
             }
             this.sidebar.add_items('other', _.compact([
                 self.is_action_enabled('delete') && { label: _t('Delete'), callback: self.on_button_delete },
+                !(['stock.picking.in', 'stock.picking', 'stock.picking.out'].includes(self.model)) &&
                 self.is_action_enabled('create') && { label: _t('Duplicate'), callback: self.on_button_duplicate }
             ]));
         }
